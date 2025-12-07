@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI School Management</title>
+<link rel="stylesheet" href="style.css">
+<style>
+body{font-family:sans-serif;background:#f2f2f2;margin:0}
+header{background:#1976ff;color:#fff;padding:12px;text-align:center}
+nav{background:#fff;padding:10px;display:flex;gap:10px;justify-content:center;border-bottom:1px solid #ddd}
+button,a{padding:8px 14px;border:none;background:#1976ff;color:#fff;border-radius:5px;cursor:pointer;text-decoration:none;font-weight:bold}
+a{background:#444}
+.page{display:none;padding:20px}
+.show{display:block}
+.card{background:#fff;padding:15px;border-radius:8px;margin-bottom:15px;border:1px solid #ddd}
+.hidden{display:none}
+input,select{padding:8px;width:100%;margin-top:5px;margin-bottom:10px;border-radius:5px;border:1px solid #aaa}
+pre{background:#000;color:#0f0;padding:10px}
+#chatAI{position:fixed;bottom:18px;right:18px;background:#fff;padding:10px;border-radius:8px;width:270px;height:330px;border:2px solid #1976ff;display:none;flex-direction:column}
+#chatAI textarea{flex:1;margin-top:8px}
+#chatAI-toggle{position:fixed;bottom:20px;right:20px;background:#ff4081;color:#fff;padding:14px;border-radius:50%;cursor:pointer;font-size:20px}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>AI SCHOOL MANAGEMENT SYSTEM</h2>
+  <div id="user-status">⏳ Đang kiểm tra đăng nhập...</div>
+</header>
+
+<nav>
+  <button onclick="show('login-page')">🔑 Đăng nhập</button>
+  <button onclick="show('dashboard')">📊 Dashboard</button>
+  <a href="chat.html">💬 Chat Toàn Trường</a>
+</nav>
+
+
+<!-- LOGIN + REGISTER -->
+<section id="login-page" class="page show">
+<div class="card">
+<h3>Đăng nhập</h3>
+<input id="login-email" placeholder="Email">
+<input id="login-pass" type="password" placeholder="Mật khẩu">
+<button id="btn-login">Đăng nhập</button>
+</div>
+
+<div class="card">
+<h3>Tạo tài khoản mới</h3>
+<input id="reg-name" placeholder="Họ tên">
+<input id="reg-email" placeholder="Email">
+<input id="reg-pass" type="password" placeholder="Mật khẩu">
+<select id="reg-role">
+<option value="student">Học sinh</option>
+<option value="teacher">Giáo viên</option>
+<option value="principal">Hiệu trưởng</option>
+</select>
+<button id="btn-register">Đăng ký</button>
+</div>
+</section>
+
+
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="page">
+
+<h2>📌 Bảng điều khiển</h2>
+<p>Chức năng tùy thuộc vào loại tài khoản đăng nhập</p>
+<hr>
+
+<!-- ================= HIỆU TRƯỞNG ================= -->
+<div id="panel-principal" class="card hidden">
+<h3>🏫 Hiệu trưởng quản lý trường & lớp</h3>
+
+<input id="school-name" placeholder="Nhập tên trường...">
+<button onclick="addSchool()">➕ Thêm trường</button>
+
+<h4>Danh sách trường</h4>
+<div id="school-list"></div>
+
+<h4>Tạo lớp mới</h4>
+<select id="select-school"></select>
+<input id="class-name" placeholder="VD: 9A1">
+<button onclick="addClass()">➕ Thêm lớp</button>
+</div>
+
+
+
+<!-- ================= GIÁO VIÊN ================= -->
+<div id="panel-teacher" class="card hidden">
+
+<h3>📘 Giáo viên quản lý lớp & điểm</h3>
+
+<select id="t-school"></select>
+<select id="t-class"></select>
+
+<!-- Add Multiple students -->
+<textarea id="student-bulk" placeholder="Nhập danh sách học sinh mỗi dòng 1 tên..."></textarea>
+<button onclick="addStudents()">➕ Thêm danh sách học sinh</button>
+
+<h4>Nhập điểm cho từng học sinh</h4>
+<input id="st-name" placeholder="Tên học sinh">
+<input id="st-score" placeholder="Điểm (8.5)">
+<button onclick="addScore()">💾 Lưu điểm</button>
+
+<h4>DANH SÁCH - NHẤN TÊN ĐỂ SỬA</h4>
+<div id="class-students"></div>
+
+</div>
+
+
+
+<!-- ================= HỌC SINH ================= -->
+<div id="panel-student" class="card hidden">
+<h3>🎒 Điểm số của bạn</h3>
+<button onclick="loadMyScore()">Xem điểm</button>
+<pre id="my-score"></pre>
+</div>
+
+
+<button onclick="logout()">🚪 Đăng xuất</button>
+</section>
+
+
+
+
+<!-- ================= POPUP AI CHAT ================= -->
+<!-- <div id="chatAI">
+<b>AI hỗ trợ giáo viên 🧠</b>
+<textarea id="ai-in" placeholder="Nhập tên HS + nhận xét..."></textarea>
+<button onclick="aiEval()">Phân tích AI</button>
+<pre id="ai-out"></pre>
+</div>
+
+<button id="chatAI-toggle" onclick="toggleAI()">🤖</button> -->
+
+
+
+
+<script type="module">
+/* ===================================================== *
+ * 🔥 FIREBASE INIT
+ * ===================================================== */
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut}
+ from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {getFirestore,doc,setDoc,getDoc,updateDoc,addDoc,getDocs,collection,arrayUnion}
+ from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const app = initializeApp({
+ apiKey:"AIzaSyBc8H5YOYIyQ035kowGn00KdqxK0JzGhlk",
+ authDomain:"quan-ly-lop-hoc-14fb6.firebaseapp.com",
+ projectId:"quan-ly-lop-hoc-14fb6"
+});
+
+const auth = getAuth(app);
+const db   = getFirestore(app);
+const $=id=>document.getElementById(id);
+
+
+/* ===================================================== *
+ * 🔥 LOGIN + REGISTER
+ * ===================================================== */
+$("btn-register").onclick=async()=>{
+try{
+const u=await createUserWithEmailAndPassword(auth,$("reg-email").value,$("reg-pass").value);
+await setDoc(doc(db,"users",u.user.uid),{
+ name:$("reg-name").value,email:$("reg-email").value,role:$("reg-role").value
+});
+alert("Tạo tài khoản thành công");
+show("dashboard");
+}catch(e){alert(e.message);}
+};
+
+$("btn-login").onclick=()=>signInWithEmailAndPassword(auth,$("login-email").value,$("login-pass").value).catch(()=>alert("Sai mật khẩu"));
+
+
+/* ===================================================== *
+ * 🔥 AUTH CHANGE
+ * ===================================================== */
+onAuthStateChanged(auth, async user=>{
+if(!user) return show("login-page");
+
+let info=await getDoc(doc(db,"users",user.uid));
+let u=info.data();
+
+$("user-status").innerHTML=`👋 Xin chào <b>${u.name}</b> — ${u.role}`;
+show("dashboard");
+
+/* ROLE DISPLAY */
+$("panel-principal").classList.toggle("hidden",u.role!=="principal");
+$("panel-teacher").classList.toggle("hidden",u.role!=="teacher");
+$("panel-student").classList.toggle("hidden",u.role!=="student");
+
+if(u.role==="principal") loadSchools();
+if(u.role==="teacher") loadTeachClasses();
+if(u.role==="student") loadMyScore();
+});
+
+
+/* ===================================================== *
+ * 🏫 HIỆU TRƯỞNG: QUẢN LÝ TRƯỜNG/LỚP
+ * ===================================================== */
+async function addSchool(){
+await addDoc(collection(db,"schools"),{name:$("school-name").value,classes:[]});
+$("school-name").value="";
+loadSchools();
+}
+
+async function loadSchools(){
+$("school-list").innerHTML="⏳ Loading...";
+const list=await getDocs(collection(db,"schools"));
+$("select-school").innerHTML="";
+list.forEach(s=>{$("school-list").innerHTML+=`📍 ${s.data().name}<br>`;});
+}
+
+async function addClass(){
+let id=$("select-school").value;
+await updateDoc(doc(db,"schools",id),{classes:arrayUnion({name:$("class-name").value,students:[]})});
+$("class-name").value="";
+alert("Đã tạo lớp");
+}
+
+
+/* ===================================================== *
+ * 👨‍🏫 GIÁO VIÊN: THÊM HỌC SINH + NHẬP NHIỀU ĐIỂM
+ * ===================================================== */
+let currentClassID="";
+
+async function loadTeachClasses(){
+const list=await getDocs(collection(db,"schools"));
+$("t-school").innerHTML="";$("t-class").innerHTML="";
+list.forEach(s=>{
+ let d=s.data();
+ d.classes?.forEach(c=>{
+   $("t-school").innerHTML+=`<option>${d.name}</option>`;
+   $("t-class").innerHTML+=`<option>${c.name}</option>`;
+ });
+});
+}
+
+async function addStudents(){
+let school=$("t-school").value;
+let className=$("t-class").value;
+
+const docs=await getDocs(collection(db,"schools"));
+docs.forEach(async d=>{
+let sc=d.data();
+if(sc.name===school){
+let cls=sc.classes.find(c=>c.name==className);
+$("student-bulk").value.split("\n").forEach(n=>cls.students.push({name:n.trim(),scores:[]}));
+await updateDoc(doc(db,"schools",d.id),{classes:sc.classes});
+alert("Đã thêm học sinh");
+}
+});
+}
+
+async function addScore(){
+let st=$("st-name").value.trim();
+let score=$("st-score").value;
+let school=$("t-school").value;
+let className=$("t-class").value;
+
+const docs=await getDocs(collection(db,"schools"));
+docs.forEach(async d=>{
+let sc=d.data();
+let cls=sc.classes.find(c=>c.name==className);
+let hs=cls.students.find(s=>s.name==st);
+
+if(hs){hs.scores.push(Number(score));alert("Đã cập nhật");}
+await updateDoc(doc(db,"schools",d.id),{classes:sc.classes});
+});
+}
+
+
+/* ===================================================== *
+ * 🧠 AI CHAT POP-UP
+ * ===================================================== */
+function toggleAI(){ $("chatAI").style.display=$("chatAI").style.display==="flex"?"none":"flex"; }
+
+function aiEval(){
+let t=$("ai-in").value;
+$("ai-out").innerText="📌 AI phân tích: "+t+"\n• Học lực tốt\n• Nên rèn luyện thêm\n• Có tiềm năng phát triển cao";
+}
+
+/* ===================================================== */
+function logout(){ signOut(auth); }
+function show(id){document.querySelectorAll(".page").forEach(p=>p.classList.remove("show"));$(id).classList.add("show");}
+
+</script>
+
+</body>
+</html>

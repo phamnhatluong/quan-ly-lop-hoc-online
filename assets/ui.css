@@ -1,0 +1,14 @@
+.panel{animation:fade .35s ease}
+@keyframes fade{from{opacity:.0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.back{display:inline-block;padding:8px 12px;border-radius:8px;background:#1a73e8;color:#fff;text-decoration:none;margin-bottom:8px}
+#forum-box div{padding:8px 10px;border-bottom:1px solid #eef4ff}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:flex;align-items:center;justify-content:center;z-index:9998}
+.modal{background:#fff;border-radius:10px;padding:16px;max-width:720px;width:94%;box-shadow:0 20px 50px rgba(2,6,23,0.2)}
+
+/* Toast placeholder styles (light) */
+.toast-light{background:#111827;color:#fff;padding:8px 12px;border-radius:8px}
+
+/* small helpers */
+.text-muted{color:#6b7280}

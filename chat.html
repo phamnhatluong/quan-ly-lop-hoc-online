@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Diễn đàn chung</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<header><h1>Diễn đàn chung</h1></header>
+<main class="page card">
+  <div id="forum-box" class="list" style="height:60vh;overflow:auto"></div>
+  <input id="forum-input" placeholder="Nhập tin nhắn..." />
+  <button id="forum-send">Gửi</button>
+  <p><a href="index.html">← Quay lại</a></p>
+</main>
+
+<script type="module">
+import { auth } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { startForumRender } from "./forum.js";
+
+onAuthStateChanged(auth, user=>{
+  if(!user) { alert('Cần đăng nhập'); location.href = 'index.html'; return; }
+  // currentUser may be present; else minimal fallback
+  startForumRender('forum-box','forum-input','forum-send');
+});
+</script>
+</body>
+</html>

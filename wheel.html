@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"/><title>Wheel</title><link rel="stylesheet" href="assets/wheel.css"></head>
+<body>
+<a class="back" href="index.html">⬅ Trở lại</a>
+<main class="container">
+<h1>Vòng quay học sinh</h1>
+<textarea id="list" placeholder="Mỗi dòng 1 tên"></textarea>
+<div><button id="btn-spin">QUAY</button></div>
+<div class="slot"><div id="mask"><div id="roller"></div></div></div>
+<div id="result"></div>
+
+
+<script type="module">
+    import { auth } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import "./js/data.js";  // load trường → lớp → điểm
+
+onAuthStateChanged(auth, user => {
+    if (!user) {
+        alert("⚠ Bạn cần đăng nhập trước");
+        location.href = "index.html";
+        return;
+    }
+
+    window.currentUser = user;
+    console.log("Đã đăng nhập → UID:", user.uid);
+});
+// Tự động load danh sách học sinh nếu có lớp
+if(window.currentUser.role === 'teacher' || window.currentUser.role === 'student'){
+  const found = window.DATA.findStudentByUid(window.currentUser.uid); // Hoặc teacherUid
+  if(found && found.class.students){
+    const names = found.class.students.map(st => st.name).join('\n');
+    document.getElementById('list').value = names;
+  }
+}
+import { auth } from './firebase.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+onAuthStateChanged(auth,u=>{ if(!u){ alert('Vui lòng đăng nhập'); location.href='index.html'; }});
+</script>
+<script src="js/wheel.js"></script>
+</main>
+</body>
+</html>
