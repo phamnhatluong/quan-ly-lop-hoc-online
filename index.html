@@ -8,7 +8,9 @@
 <style>
 body{font-family:sans-serif;background:#f2f2f2;margin:0}
 header{background:#1976ff;color:#fff;padding:12px;text-align:center}
-nav{background:#fff;padding:10px;display:flex;gap:10px;justify-content:center;border-bottom:1px solid #ddd}
+nav{background:#fff;padding:10px;display:flex;gap:10px;align-items:stretch;border-bottom:1px solid #ddd}
+nav> *{flex:1 1 0;min-width:0}
+nav button, nav a{width:100%;text-align:center}
 button,a{padding:8px 14px;border:none;background:#1976ff;color:#fff;border-radius:5px;cursor:pointer;text-decoration:none;font-weight:bold}
 a{background:#444}
 .page{display:none;padding:20px}
@@ -19,7 +21,24 @@ input,select{padding:8px;width:100%;margin-top:5px;margin-bottom:10px;border-rad
 pre{background:#000;color:#0f0;padding:10px}
 #chatAI{position:fixed;bottom:18px;right:18px;background:#fff;padding:10px;border-radius:8px;width:270px;height:330px;border:2px solid #1976ff;display:none;flex-direction:column}
 #chatAI textarea{flex:1;margin-top:8px}
-#chatAI-toggle{position:fixed;bottom:20px;right:20px;background:#ff4081;color:#fff;padding:14px;border-radius:50%;cursor:pointer;font-size:20px}
+#chatAI-toggle{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#ff4081;
+  color:#fff;
+  width:56px;
+  height:56px;
+  padding:0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  cursor:pointer;
+  font-size:20px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.12);
+  border:none;
+}
 </style>
 </head>
 
@@ -127,14 +146,14 @@ pre{background:#000;color:#0f0;padding:10px}
 
 
 <!-- ================= POPUP AI CHAT ================= -->
-<!-- <div id="chatAI">
+<div id="chatAI">
 <b>AI hỗ trợ giáo viên 🧠</b>
 <textarea id="ai-in" placeholder="Nhập tên HS + nhận xét..."></textarea>
 <button onclick="aiEval()">Phân tích AI</button>
 <pre id="ai-out"></pre>
 </div>
 
-<button id="chatAI-toggle" onclick="toggleAI()">🤖</button> -->
+<button id="chatAI-toggle" onclick="toggleAI()">🤖</button>
 
 
 
